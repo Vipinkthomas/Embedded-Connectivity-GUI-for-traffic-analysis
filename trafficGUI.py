@@ -44,8 +44,8 @@ class PacketAnalyser(Winforms.Form):
 
         self.create_sendButton()
         self.create_receiveButton()
-        self.create_exitButton()
-        self.create_saveExitButton()
+        # self.create_exitButton()
+        self.create_saveButton() ## replace with save and stay in the gui
         self.create_selectFrameType()
         self.create_destination_mac_ip_textbox()
         self.createSourceLabel()
@@ -71,11 +71,13 @@ class PacketAnalyser(Winforms.Form):
         self.MinimizeBox = False
 
         self.HelpButtonClicked += self.Form_HelpButtonClicked
-        self.FormClosed += self.xClicked
+        self.FormClosing += self.SaveChangesDialog
         
 
         # self.my_ip = Logging.get_ip()
         # self.my_mac = Logging.get_mac()
+        self.my_ip = "1.1.1.1"
+        self.my_mac = "FF:FF:FF:FF:FF:FF"
 
 
         self.myIpOrMac = ""
@@ -262,46 +264,46 @@ class PacketAnalyser(Winforms.Form):
 
         self.Controls.Add(self.exitButton)
 
-    def create_saveExitButton(self):
+    def create_saveButton(self):
 
 
         # Exit button object
 
-        self.saveExitButton = Winforms.Button()
+        self.saveButton = Winforms.Button()
 
         # location of button
 
-        self.saveExitButton.Location = draw.Point(550, 600)
+        self.saveButton.Location = draw.Point(550, 600)
 
         # button size
 
-        self.saveExitButton.Size = draw.Size(120, 40)
+        self.saveButton.Size = draw.Size(120, 40)
 
         # adding style to SaveExit button
 
-        self.saveExitButton.FlatStyle = Winforms.FlatStyle.Flat
+        self.saveButton.FlatStyle = Winforms.FlatStyle.Flat
 
-        self.saveExitButton.FlatAppearance.BorderSize = 0
+        self.saveButton.FlatAppearance.BorderSize = 0
 
         # Add button text
 
-        self.saveExitButton.Text = "Save / Exit"
+        self.saveButton.Text = "Save / Exit"
 
         # Define font of button
 
-        self.saveExitButton.Font = self.elementsFont
+        self.saveButton.Font = self.elementsFont
 
         # SaveExit Button color
 
-        self.saveExitButton.ForeColor = draw.Color.FromName("White")
+        self.saveButton.ForeColor = draw.Color.FromName("White")
 
-        self.saveExitButton.BackColor = draw.Color.FromArgb(255, 68, 90, 100)
+        self.saveButton.BackColor = draw.Color.FromArgb(255, 68, 90, 100)
 
-        self.saveExitButton.Click += self.saveExit_button_on_click
+        self.saveButton.Click += self.save_button_on_click
 
         # adding button to the form
 
-        self.Controls.Add(self.saveExitButton)
+        self.Controls.Add(self.saveButton)
 
     def createMacIpLabel(self):
         self.macIpLabel = Winforms.Label()
@@ -543,20 +545,12 @@ class PacketAnalyser(Winforms.Form):
 
     def createPayloadTextBox(self):
         self.payload = Winforms.TextBox()
-
         self.payload.Location = draw.Point(520, 80)
         self.payload.MaxLength = 14
-
         self.payload.Size = draw.Size(150, 100)
-
         self.payload.ForeColor = draw.Color.FromName('Black')
-
-
         self.payload.Font = draw.Font("Lato", System.Single(8))
         self.payload.Text = "00 02 03 04 09"
-        
-
-
         self.Controls.Add(self.payload)
 
     def receiveIpPacketsthread(self):
@@ -719,13 +713,19 @@ class PacketAnalyser(Winforms.Form):
         self.exiting = True
         self.Close()
 
-    def SaveChangesDialog(self):
-        print(self.richTextBox.Modified)
-        if Winforms.MessageBox.Show("Save changes?", "Exit !", Winforms.MessageBoxButtons.OK | Winforms.MessageBoxButtons.YesNo) == Winforms.DialogResult.Yes:
-           self.SaveDocument()
+    def SaveChangesDialog(self,sender, FormClosingEventArgs):
+        
+        exitFormResult = Winforms.MessageBox.Show("Save changes?", "Exit !", Winforms.MessageBoxButtons.YesNoCancel) 
+        if exitFormResult == Winforms.DialogResult.Yes:
+            self.SaveDocument()
+            self.exiting = True
+            self.Close()
+        elif exitFormResult == Winforms.DialogResult.No:
+            self.exiting = True 
+        elif exitFormResult == Winforms.DialogResult.Cancel:
+            FormClosingEventArgs.Cancel = True
 
-
-    def saveExit_button_on_click(self, sender, args):
+    def save_button_on_click(self, sender, args):
 
         self.filename = ''
         self.SaveDocument()
@@ -753,7 +753,7 @@ class PacketAnalyser(Winforms.Form):
         data = System.Text.Encoding.ASCII.GetBytes(System.String(data))
         stream.Write(data, 0, data.Length)
         stream.Close()
-        self.Close()
+        # self.Close()
 
     def clear_button_on_click(self, sender, args):
 
@@ -767,7 +767,7 @@ class PacketAnalyser(Winforms.Form):
         
     def xClicked(self, sender, CancelEventArgs):
         self.SaveChangesDialog()
-        self.exiting = True
+        # self.exiting = True
 
 
     def disableComponents(self):
@@ -777,7 +777,7 @@ class PacketAnalyser(Winforms.Form):
         self.payload.Enabled = False
         self.frameTypeSelectBox.Enabled = False
         #self.exitButton.Enabled = False
-        self.saveExitButton.Enabled = False
+        self.saveButton.Enabled = False
     
     def enableComponents(self):
         self.onePacket.Enabled = True
@@ -786,7 +786,7 @@ class PacketAnalyser(Winforms.Form):
         self.payload.Enabled = True
         self.frameTypeSelectBox.Enabled = True
         self.exitButton.Enabled = True
-        self.saveExitButton.Enabled = True
+        self.saveButton.Enabled = True
 
 
 
@@ -827,4 +827,3 @@ def main():
 #if __name__ == '__main__':
 
 main()
-
