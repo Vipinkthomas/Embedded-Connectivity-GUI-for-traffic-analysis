@@ -1,5 +1,7 @@
 import clr
 import re
+import sys
+
 clr.AddReference("System.Windows.Forms")
 clr.AddReference("System.Drawing")
 
@@ -56,6 +58,7 @@ class PacketAnalyser(Winforms.Form):
         self.createPayloadDataLabel()
         self.createMacIpLabel()
         self.create_clear_button()
+        self.createTypeLabel()
 
         self.saveFileDialog = Winforms.SaveFileDialog()
         # self.saveFileDialog.Filter = "Text Documents|*.txt|" \"Rich Text Format|*.rtf"
@@ -68,19 +71,24 @@ class PacketAnalyser(Winforms.Form):
         self.MinimizeBox = False
 
         self.HelpButtonClicked += self.Form_HelpButtonClicked
+        self.FormClosed += self.xClicked
+        
 
-        self.my_ip = "111.1.1.111"
-                      
-        self.my_mac = "FF:FF:FF:FF:FF:FF"
+        # self.my_ip = Logging.get_ip()
+        # self.my_mac = Logging.get_mac()
+
 
         self.myIpOrMac = ""
         self.destIpOrMac = ""
+        self.exiting = False
   
 
-    def Dispose(self):
-        self.components.Dispose()
+#    def Dispose(self):
+#        
+#        self.Dispose()
+#
+#        Winforms.Form.Dispose(self)
 
-        Winforms.Form.Dispose(self)
 
     def create_sendButton(self):
 
@@ -144,7 +152,7 @@ class PacketAnalyser(Winforms.Form):
         self.payloadLabel = Winforms.Label()
         self.payloadLabel.Location = draw.Point(550, 130)
         self.payloadLabel.Size = draw.Size(70, 20)
-        self.payloadLabel.Text = "Payload"
+        self.payloadLabel.Text = "Data-hex"
         self.payloadLabel.Font = draw.Font("Lato", System.Single(9))
         self.Controls.Add(self.payloadLabel)
 
@@ -297,7 +305,7 @@ class PacketAnalyser(Winforms.Form):
 
     def createMacIpLabel(self):
         self.macIpLabel = Winforms.Label()
-        self.macIpLabel.Location = draw.Point(470, 52)
+        self.macIpLabel.Location = draw.Point(480, 52)
         self.macIpLabel.Size = draw.Size(55, 20)
         self.macIpLabel.Text = "Dest."
         self.macIpLabel.Font = draw.Font("Lato", System.Single(9))
@@ -305,11 +313,19 @@ class PacketAnalyser(Winforms.Form):
     
     def createPayloadDataLabel(self):
         self.payloadDataLabel = Winforms.Label()
-        self.payloadDataLabel.Location = draw.Point(470, 82)
-        self.payloadDataLabel.Size = draw.Size(50, 20)
-        self.payloadDataLabel.Text = "Payload"
+        self.payloadDataLabel.Location = draw.Point(480, 82)
+        self.payloadDataLabel.Size = draw.Size(52, 20)
+        self.payloadDataLabel.Text = "Data"
         self.payloadDataLabel.Font = draw.Font("Lato", System.Single(9))
         self.Controls.Add(self.payloadDataLabel)
+    
+    def createTypeLabel(self):
+        self.typeLabel = Winforms.Label()
+        self.typeLabel.Location = draw.Point(480, 22)
+        self.typeLabel.Size = draw.Size(52, 20)
+        self.typeLabel.Text = "Type"
+        self.typeLabel.Font = draw.Font("Lato", System.Single(9))
+        self.Controls.Add(self.typeLabel)
 
     def create_selectFrameType(self):
 
@@ -321,30 +337,45 @@ class PacketAnalyser(Winforms.Form):
         self.frameTypeSelectBox.FlatStyle = Winforms.FlatStyle.Flat
         self.frameTypeSelectBox.DropDownStyle = Winforms.ComboBoxStyle.DropDownList
         self.frameTypeSelectBox.Font = draw.Font("Lato", System.Single(8))
-        self.frameTypeSelectBox.Items.Insert(0, "Choose frame type")
-        self.frameTypeSelectBox.Items.Insert(1, "IP Packets")
-        self.frameTypeSelectBox.Items.Insert(2, "MAC")
+        self.frameTypeSelectBox.Items.Insert(0, "IP Packets")
+        self.frameTypeSelectBox.Items.Insert(1, "MAC")
+        # self.frameTypeSelectBox.Items.Insert(2, "MAC")
         self.frameTypeSelectBox.SelectedIndex = 0
+        self.frameTypeSelectBox.SelectedIndexChanged += self.selectedFrameType
         # self.frameTypeSelectBox.DrawMode = Winforms.DrawMode.Normal
-
         self.Controls.Add(self.frameTypeSelectBox)
+
+    def selectedFrameType(self, sender, args):
+        if self.frameTypeSelectBox.SelectedIndex == 0:
+            
+            
+            self.destination_mac_ip.Text = "Ex. 192.168.1.1"
+            self.destination_mac_ip.ForeColor = draw.Color.FromName('Gray')
+        
+        elif self.frameTypeSelectBox.SelectedIndex == 1:
+            
+            
+            self.destination_mac_ip.Text = "Ex. FF:FF:FF:FF:FF:FF"
+            self.destination_mac_ip.ForeColor = draw.Color.FromName('Gray')
+
+
+    def destinationMacIpChanged(self, sender, args):
+        if self.destination_mac_ip.Text != "Ex. 192.168.1.1" and self.destination_mac_ip.Text != "Ex. FF:FF:FF:FF:FF:FF":
+            self.destination_mac_ip.ForeColor = draw.Color.FromName('Black')
 
     def create_destination_mac_ip_textbox(self):
 
         self.destination_mac_ip = Winforms.TextBox()
-        ##size and location
-
         self.destination_mac_ip.Location = draw.Point(520, 50)
         self.destination_mac_ip.Size = draw.Size(150, 100)
-        self.destination_mac_ip.ForeColor = draw.Color.FromName('Black')
-
-        # self.destination_mac_ip.FlatStyle = Winforms.FlatStyle.Flat
-        self.destination_mac_ip.Border3DStyle = Winforms.Border3DStyle.Raised
+        self.destination_mac_ip.ForeColor = draw.Color.FromName('Gray')
         self.destination_mac_ip.Font = draw.Font("Lato", System.Single(8))
-        self.destination_mac_ip.Text = "192.168.1.1"
-
-        #self.frameTypeSelectBox.DrawMode = Winforms.DrawMode.Normal
+        self.destination_mac_ip.Text = "Ex. 192.168.1.1"
+        self.destination_mac_ip.GotFocus += self.destinationMacIpTextBoxOnFocus
+        self.destination_mac_ip.LostFocus += self.destinationMacIpTextBoxLostFocus
+        self.destination_mac_ip.TextChanged += self.destinationMacIpChanged
         self.Controls.Add(self.destination_mac_ip)
+
 
     def sendButtonOn(self):
         global send_button_flag
@@ -363,6 +394,28 @@ class PacketAnalyser(Winforms.Form):
         # self.thread1.Start()
         print("on")
      
+    def checkHexValidity(self):
+         for letter in self.payload.Text.lower():
+            if letter not in "1234567890abcdef ":
+                return True
+                
+    def destinationMacIpTextBoxOnFocus(self, sender, args):
+        if self.destination_mac_ip.Text == "Ex. 192.168.1.1" or self.destination_mac_ip.Text == "Ex. FF:FF:FF:FF:FF:FF":
+            self.destination_mac_ip.Text = ""
+
+    def destinationMacIpTextBoxLostFocus(self, sender, args):
+    
+        if self.destination_mac_ip.Text == "":
+            self.destination_mac_ip.ForeColor = draw.Color.FromName('Gray')
+            
+            # if self.frameTypeSelectBox.SelectedIndex == 0:
+            #     self.destination_mac_ip.Text = ""
+            if self.frameTypeSelectBox.SelectedIndex == 0:
+                self.destination_mac_ip.Text = "Ex. 192.168.1.1"
+            elif self.frameTypeSelectBox.SelectedIndex == 1:
+                self.destination_mac_ip.Text = "Ex. FF:FF:FF:FF:FF:FF"
+            
+
     def send_button_on_click(self, sender, args):
 
         global send_button_flag
@@ -371,24 +424,23 @@ class PacketAnalyser(Winforms.Form):
             self.sendButtonOff()
 
         else:
-        
+
             if self.frameTypeSelectBox.SelectedIndex == 0:
-
-                Winforms.MessageBox.Show("Please select type of packet", "WARNING")
-
-            elif self.frameTypeSelectBox.SelectedIndex == 1:
 
                 if not re.match("\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", self.destination_mac_ip.Text.lower()):
 
                     Winforms.MessageBox.Show(
                         "Please check the format of the destination IP Address", "WARNING")
-
+                #int(, 16)
+                
+                elif (len(self.payload.Text) - self.payload.Text.count(" ") ) % 2 != 0 or not re.match("[0-9a-fA-F]", self.payload.Text) or self.checkHexValidity():
+                    Winforms.MessageBox.Show(
+                        "Please check the format of the data Hexadecimal values", "WARNING")
+                        
                 else:
 
                     if self.onePacket.Checked:
-                        pass
-                        # Send(self.payload.Text, self.richTextBox, self.my_ip, self.destination_mac_ip.Text).oneTimeSend()
-                        # self.sendButtonOff()
+                        self.sendIpPackets()
 
                     elif self.multiplePackets.Checked:
 
@@ -397,9 +449,10 @@ class PacketAnalyser(Winforms.Form):
                         self.disableComponents()
                         self.myIpOrMac = self.my_ip
                         self.destIpOrMac = self.destination_mac_ip.Text 
-                        self.thread2 = Thread(ThreadStart(self.send_thread))
+                        self.thread2 = Thread(ThreadStart(self.sendIpPackets))
                         self.thread2.SetApartmentState(ApartmentState.STA)
                         self.thread2.Start()
+                        
 
             else:
 
@@ -407,12 +460,16 @@ class PacketAnalyser(Winforms.Form):
 
                     Winforms.MessageBox.Show(
                         "Please check the format of the destination MAC Address", "WARNING")
+                
+                elif (len(self.payload.Text) - self.payload.Text.count(" ") ) % 2 != 0 or not re.match("[0-9a-fA-F]", self.payload.Text) or self.checkHexValidity():
+                    Winforms.MessageBox.Show(
+                        "Please check the format of the data Hexadecimal values", "WARNING")
 
                 else:
 
                     if self.onePacket.Checked:
-                        # Send(self.payload.Text, self.richTextBox, self.my_mac, self.destination_mac_ip.Text).oneTimeSend()
-                        self.sendButtonOff()
+
+                        self.sendMacFrames()
 
                     elif self.multiplePackets.Checked:
 
@@ -421,9 +478,10 @@ class PacketAnalyser(Winforms.Form):
                         self.disableComponents()
                         self.myIpOrMac = self.my_mac
                         self.destIpOrMac = self.destination_mac_ip.Text 
-                        self.thread2 = Thread(ThreadStart(self.send_thread))
+                        self.thread2 = Thread(ThreadStart(self.sendMacFrames))
                         self.thread2.SetApartmentState(ApartmentState.STA)
                         self.thread2.Start()
+                        
                                  
     def create_clear_button(self):
 
@@ -486,9 +544,8 @@ class PacketAnalyser(Winforms.Form):
     def createPayloadTextBox(self):
         self.payload = Winforms.TextBox()
 
-        ##size and location
-
         self.payload.Location = draw.Point(520, 80)
+        self.payload.MaxLength = 14
 
         self.payload.Size = draw.Size(150, 100)
 
@@ -497,39 +554,131 @@ class PacketAnalyser(Winforms.Form):
 
         self.payload.Font = draw.Font("Lato", System.Single(8))
         self.payload.Text = "00 02 03 04 09"
+        
 
 
         self.Controls.Add(self.payload)
 
     def receiveIpPacketsthread(self):
         
-        global receive_button_flag
-        
-        while receive_button_flag:
-            sleep(1)
-            self.richTextBox.Text += f"{self.my_mac:<29}{self.my_mac:<25}{self.payload.Text}" +"\r\n"
-        self.sendButton.Enabled = True
-        self.enableComponents()
+       global receive_button_flag
+       
+       def on_eth_msg_received(msg):
+            
+            try:
+                
+                
+                if msg.get_ipv4_layer().ipv4_header.ip_address_destination == self.my_ip:
+
+                    x=""
+                    for i in msg.get_udp_layer().payload[:5]:
+                        
+                        if len(hex(int(i))) <= 3:
+                            x += "0"+hex(int(i))[2:] + " "
+                        else:
+                        
+                            x+=hex(int(i))[2:] + " "
+                    self.richTextBox.Text += "{0:<29}{1:<25}{2}".format(msg.get_ipv4_layer().ipv4_header.ip_address_source,self.my_ip,x) +"\r\n"
+
+            except:
+                pass
+       
+       while receive_button_flag and not self.exiting:
+           
+           g_ethernet_msg.on_message_received += on_eth_msg_received
+           g_ethernet_msg.start_capture()
+           sleep(1)
+           g_ethernet_msg.stop_capture()
+           g_ethernet_msg.on_message_received -= on_eth_msg_received
+
+            
+       self.sendButton.Enabled = True
+       self.enableComponents()
     
     def receiveMacFramesthread(self):
-        
+
         global receive_button_flag
+
+        def on_eth_msg_received(msg):
+            try:
+                
+                if msg.mac_address_destination == self.my_mac:
+                    
+                    x=""
+                    for i in msg.payload[:5]:
+                        x+=hex(int(i))[2:] + " "
+                    self.richTextBox.Text += "{0:<29}{1:<25}{2}".format(msg.mac_address_source, self.my_mac,x) +"\r\n"
+            
+            except:
+                pass
+                
         
-        while receive_button_flag:
+        while receive_button_flag and not self.exiting:
+            
+
+            g_ethernet_msg.on_message_received += on_eth_msg_received
+            g_ethernet_msg.start_capture()
             sleep(1)
-            self.richTextBox.Text += f"{self.my_mac:<29}{self.my_mac:<25}{self.payload.Text}" +"\r\n"
+            g_ethernet_msg.stop_capture()
+            g_ethernet_msg.on_message_received -= on_eth_msg_received
+
         self.sendButton.Enabled = True
         self.enableComponents()
+        
 
-    def send_thread(self):
-        while send_button_flag:
-            sleep(1)
-            self.richTextBox.Text += f"{self.my_mac:<29}{self.my_mac:<25}{self.payload.Text}" +"\r\n"
-        self.receiveButton.Enabled = True
-        self.enableComponents()
+    def sendMacFrames(self):
+
+        g_ethernet_msg.mac_address_source = self.my_mac
+        g_ethernet_msg.mac_address_destination = self.destination_mac_ip.Text
+        g_ethernet_msg.payload = System.Array[Byte](bytearray.fromhex(self.payload.Text))
+
+
+        if self.onePacket.Checked:
+            g_ethernet_msg.send()
+            self.richTextBox.Text += "{0:<29}{1:<25}{2}".format(self.my_mac,self.destination_mac_ip.Text,self.payload.Text) +"\r\n"
+                
+
+
+        elif self.multiplePackets.Checked:
+            while send_button_flag and not self.exiting:
+                g_ethernet_msg.send()
+                self.richTextBox.Text += "{0:<29}{1:<25}{2}".format(self.my_mac,self.destination_mac_ip.Text,self.payload.Text) +"\r\n"
+
+                sleep(1)
+                
+            self.receiveButton.Enabled = True
+            self.enableComponents()
+
+    def sendIpPackets(self):
+        
+
+        udp_packet = message_builder.create_udp_message()
+        udp_packet.payload = System.Array[Byte](bytearray.fromhex(self.payload.Text))
+        udp_packet.ipv4_header.ip_address_source = self.my_ip
+        
+        udp_packet.ipv4_header.ip_address_destination = self.destination_mac_ip.Text
+        udp_packet.udp_header.port_source = 9999
+        udp_packet.udp_header.port_destination = 10000
+
+        if self.onePacket.Checked:
+            udp_packet.send()
+            self.richTextBox.Text += "{0:<29}{1:<25}{2}".format(self.my_ip,self.destination_mac_ip.Text,self.payload.Text) +"\r\n"
+
+
+        elif self.multiplePackets.Checked:
+            while send_button_flag and not self.exiting:
+                udp_packet.send()
+                self.richTextBox.Text += "{0:<29}{1:<25}{2}".format(self.my_ip,self.destination_mac_ip.Text,self.payload.Text) +"\r\n"
+
+                sleep(2)
+                
+            self.receiveButton.Enabled = True
+            self.enableComponents()
 
     def checkReceivedButtonClicked(self):
+
         global receive_button_flag
+
         if receive_button_flag == 0:
             receive_button_flag = 1
             self.receiveButton.ForeColor = draw.Color.FromName("White")
@@ -543,32 +692,38 @@ class PacketAnalyser(Winforms.Form):
             self.receiveButton.BackColor = draw.Color.FromArgb(255, 68, 90, 100)
             self.receiveButton.Text = "Receive"
 
-
     def receive_button_on_click(self, sender, args):
         
+            # if self.frameTypeSelectBox.SelectedIndex == 0:
+
+            #     Winforms.MessageBox.Show("Please select type of packet to receive", "WARNING")
 
             if self.frameTypeSelectBox.SelectedIndex == 0:
-
-                Winforms.MessageBox.Show("Please select type of packet to receive", "WARNING")
-
-            elif self.frameTypeSelectBox.SelectedIndex == 1:
                 self.checkReceivedButtonClicked()
-                self.myIpOrMac = "EE:EE:EE:EE:EE:EE"
+                self.myIpOrMac = self.my_ip
                 
                 self.thread1 = Thread(ThreadStart(self.receiveIpPacketsthread))
                 self.thread1.SetApartmentState(ApartmentState.STA)
                 self.thread1.Start()
+                
 
             else:
+                self.myIpOrMac = self.my_mac
                 self.checkReceivedButtonClicked()
                 self.thread1 = Thread(ThreadStart(self.receiveMacFramesthread))
                 self.thread1.SetApartmentState(ApartmentState.STA)
                 self.thread1.Start()
-
-            
+               
+       
     def exit_button_on_click(self, sender, args):
-
+        self.exiting = True
         self.Close()
+
+    def SaveChangesDialog(self):
+        print(self.richTextBox.Modified)
+        if Winforms.MessageBox.Show("Save changes?", "Exit !", Winforms.MessageBoxButtons.OK | Winforms.MessageBoxButtons.YesNo) == Winforms.DialogResult.Yes:
+           self.SaveDocument()
+
 
     def saveExit_button_on_click(self, sender, args):
 
@@ -592,13 +747,9 @@ class PacketAnalyser(Winforms.Form):
         self.richTextBox.Select(0, 0)
         stream = File.OpenWrite(filename)
 
-        # if filename.endswith('.rtf'):
 
-        #     data = self.richTextBox.Rtf
-
-        # else:
-
-        data = self.richTextBox.Text
+        "My IP : {0} \nMY MAC: {1}", "Info".format(self.my_ip, self.my_mac)
+        data = "{0:<29}{1:<25}{2}".format("Source","Destination","Payload") +"\r\n"+self.richTextBox.Text
         data = System.Text.Encoding.ASCII.GetBytes(System.String(data))
         stream.Write(data, 0, data.Length)
         stream.Close()
@@ -610,9 +761,14 @@ class PacketAnalyser(Winforms.Form):
 
     def Form_HelpButtonClicked(self, sender, CancelEventArgs):
 
-        Winforms.MessageBox.Show(f"My IP : {self.my_ip} \nMY MAC: {self.my_mac}", "Info")
+        Winforms.MessageBox.Show("My IP : {0} \nMY MAC: {1}".format(self.my_ip, self.my_mac), "Info")
 
         CancelEventArgs.Cancel = True
+        
+    def xClicked(self, sender, CancelEventArgs):
+        self.SaveChangesDialog()
+        self.exiting = True
+
 
     def disableComponents(self):
         self.onePacket.Enabled = False
@@ -620,7 +776,7 @@ class PacketAnalyser(Winforms.Form):
         self.destination_mac_ip.Enabled = False
         self.payload.Enabled = False
         self.frameTypeSelectBox.Enabled = False
-        self.exitButton.Enabled = False
+        #self.exitButton.Enabled = False
         self.saveExitButton.Enabled = False
     
     def enableComponents(self):
@@ -633,62 +789,18 @@ class PacketAnalyser(Winforms.Form):
         self.saveExitButton.Enabled = True
 
 
-    ##ADD CHECKBOXES FOR SEND OPTION
-    ##ADD PAYLOAD TEXTBOX
+
+
     ##KILL EVERYTHING WHEN CLOSED
-    ##ADD SEND SCRIPT - IP  //  MAC
-    ##ADD RECEIVE SCRIPT
-    ##POLISHING THE LAYOUT
-    ##CHECK CAMELCASING
-    ##ADD DOCSTRING
-    ##COMMENT THE CODE
-    ##FIX SAVE EXIT
-    ##ADD HEADERS IN TEXT FILE
-    ##ONE SAME FONT FOR ALL EXCEPT DATA TABLE
+
+    ##POLISHING THE LAYOUT.............
+    ##CHECK CAMELCASING......
+    ##ADD DOCSTRING......
+    ##COMMENT THE CODE.....
+    ##save && save on close
+    ##ONE SAME FONT colors (add constants etc) FOR ALL EXCEPT DATA TABLE
     ##REMOVE REDUNDANT CODE
-
-# class Send():
-
-#     def __init__(self, payload, rb , myIpOrMac, destIpOrMac):
-#         self.payload = payload
-#         self.rb = rb
-#         self.myIpOrMac = myIpOrMac
-#         self.destIpOrMac = destIpOrMac
-
-#     def oneTimeSend(self):
-        
-#         self.rb.Text += f"{self.destIpOrMac:<29}{self.myIpOrMac:<25}{self.payload}" +"\r\n"
-        
-
-
-#     def sendThreadFunction(self):
-#         global send_button_flag
-        
-#         while send_button_flag:
-#             sleep(1)
-#             self.rb.Text += f"{self.destIpOrMac:<29}{self.myIpOrMac:<25}{self.payload}" +"\r\n"
-
-
-# class Receive():
-    
-
-#     def __init__(self, payload, rb , myIpOrMac, destIpOrMac):
-#         self.payload = payload
-#         self.rb = rb
-#         self.myIpOrMac = myIpOrMac
-#         self.destIpOrMac = destIpOrMac
-
-
-#     def receiveThreadFunction(self, rb):
-
-#         global receive_button_flag
-        
-#         while receive_button_flag:
-            
-#             ##TODO ADD RECEIVE SCRIPT
-#             sleep(1)
-#             self.rb.Text += f"{self.myIpOrMac :<29}{self.destIpOrMac:<25}{self.payload}" +"\r\n"
-            
+    ##AVOID GLOBALS
 
 
 def app_thread():
@@ -712,6 +824,7 @@ def main():
 
 
 #----  MAIN  ----#
-if __name__ == '__main__':
+#if __name__ == '__main__':
 
-    main()
+main()
+
