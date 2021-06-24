@@ -717,8 +717,8 @@ class PacketAnalyser(Winforms.Form):
         
         exitFormResult = Winforms.MessageBox.Show("Save changes?", "Exit !", Winforms.MessageBoxButtons.YesNoCancel) 
         if exitFormResult == Winforms.DialogResult.Yes:
-            self.SaveDocument()
             self.exiting = True
+            self.SaveDocument()
         elif exitFormResult == Winforms.DialogResult.No:
             self.exiting = True 
         elif exitFormResult == Winforms.DialogResult.Cancel:
