@@ -719,7 +719,6 @@ class PacketAnalyser(Winforms.Form):
         if exitFormResult == Winforms.DialogResult.Yes:
             self.SaveDocument()
             self.exiting = True
-            self.Close()
         elif exitFormResult == Winforms.DialogResult.No:
             self.exiting = True 
         elif exitFormResult == Winforms.DialogResult.Cancel:
