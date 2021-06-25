@@ -696,7 +696,7 @@ class PacketAnalyser(Winforms.Form):
         self.enableComponents()
         
     def sendMacFrames(self):
-        """ send thread function and also used to send one packet"""
+        """ send-thread function and also used to send packets"""
 
         #creating ethernet message which holds the source and destination mac addresses as well as the payload data
         g_ethernet_msg.mac_address_source = self.myMac
