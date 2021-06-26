@@ -1,3 +1,4 @@
+#import libraries
 import clr
 import re
 from time import sleep
@@ -13,19 +14,15 @@ import System
 from System.Threading import ApartmentState, Thread, ThreadStart
 
 clr.AddReference("System.Windows.Forms")
-
 clr.AddReference("System.Drawing")
 
 
-
-# --Globals
-
-
 class PacketAnalyser(Winforms.Form):
-    """
+    """Main class for GUI APP"
     
     """
     def __init__(self):
+        """Constructor to initilize the GUI"""
 
         #setting Caption to GUI
         self.Text = "Packet Analyzer"
