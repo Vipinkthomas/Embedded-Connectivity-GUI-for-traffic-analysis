@@ -246,8 +246,6 @@ class PacketAnalyser(Winforms.Form):
     def createPacketsTextBox(self):
         """Function to create Packets text box which displays outgoing and incomming packets"""
 
-        self.filename = ''
-
         self.word_wrap = 1
 
         self.doctype = 1
@@ -787,43 +785,53 @@ class PacketAnalyser(Winforms.Form):
             self.receiveButton.Text = "Receive"           
 
     def SaveChangesDialog(self,sender, FormClosingEventArgs):
-        """This function gets called when the user click on X button of the GUI."""
+        """This function gets called when the user click on close[X] button of the GUI."""
         
+        #showing messagebox when the user click on close[X] button of the GUI
         exitFormResult = Winforms.MessageBox.Show("Save changes?", "Exit !", Winforms.MessageBoxButtons.YesNoCancel) 
+        #if userinput is Yes
         if exitFormResult == Winforms.DialogResult.Yes:
+            #set the exiting bool value to True, which will in turn kill the active thread.
             self.exiting = True
+            #populate save document window
             self.SaveDocument()
+        #if userinput is No
         elif exitFormResult == Winforms.DialogResult.No:
-            self.exiting = True 
+            #set the exiting bool value to True, which will in turn kill the active thread.
+            self.exiting = True
+        #if userinput is Cancel 
         elif exitFormResult == Winforms.DialogResult.Cancel:
+            #GUI will be active again
             FormClosingEventArgs.Cancel = True
 
     def saveButtonOnClick(self, sender, args):
-
-        self.filename = ''
+        """This function gets called when the user click on Save button of the GUI."""
+        #populate save document window
         self.SaveDocument()
 
     def SaveDocument(self):
+        """This function fetch the data on the richTextBox and save it as a file."""
 
-        filename = self.filename
-        if not filename:
-
-            if self.saveFileDialog.ShowDialog() != Winforms.DialogResult.OK:
-
-                return
-
-            filename = self.saveFileDialog.FileName
-
-        filename = self.filename = filename.lower()
-        self.Text = 'Python Wordpad - %s' % filename
+        # Save document dialogue box to get the filename
+        if self.saveFileDialog.ShowDialog() != Winforms.DialogResult.OK:
+            return
+        # data will be saved as "filename".txt
+        filename = self.saveFileDialog.FileName
+        # data will be saved as "filename".txt
+        filename = filename.lower()
+        # select the range of text in the richTextBox 
         self.richTextBox.Select(0, 0)
+        # Open the file in write mode 
         stream = File.OpenWrite(filename)
 
-
         "My IP : {0} \nMY MAC: {1}", "Info".format(self.myIp, self.myMac)
+        #set the data as header and richTextBox content.
         data = "{0:<29}{1:<25}{2}".format("Source","Destination","Payload") +"\r\n"+self.richTextBox.Text
+        #set the data as byteStream of data
         data = System.Text.Encoding.ASCII.GetBytes(System.String(data))
+        #write the file with bytestream content
         stream.Write(data, 0, data.Length)
+        #close the file
         stream.Close()
 
     def clearButtonOnClick(self, sender, args):
@@ -835,8 +843,9 @@ class PacketAnalyser(Winforms.Form):
     def formHelpButtonClicked(self, sender, CancelEventArgs):
         """This function is triggered when the the user clicks on the question mark on the gui.
            It shows the ip and the mac address of the machine"""
-
+        #showing messagebox when the user click on the question mark on the gui
         Winforms.MessageBox.Show("My IP : {0} \nMY MAC: {1}".format(self.myIp, self.myMac), "Info")
+        #GUI will be active again
         CancelEventArgs.Cancel = True
         
     def disableComponents(self):
@@ -879,27 +888,30 @@ class PacketAnalyser(Winforms.Form):
     ##ADD self.exiting
 
 
-def app_thread():
-
+def appThread():
+    """This function create object of the GUI and run it as Windows Forms application"""
+    #creates object of PacketAnalyser 
     app = PacketAnalyser()
-
+    #running the object of PacketAnalyser as a Windows forms application
     Winforms.Application.Run(app)
-
+    #disposing resources of PacketAnalyser object
     app.Dispose()
 
 
 def main():
-
-    thread = Thread(ThreadStart(app_thread))
-
+"""main function creates thread for the Windows Forms application(GUI)"""
+    #thread to be scheduled for execution.
+    thread = Thread(ThreadStart(appThread))
+    #sets the apartment state of a thread to single threaded apartment
     thread.SetApartmentState(ApartmentState.STA)
-
+    #start the thread
     thread.Start()
-
+    #join the thread, to ensure that a thread has been terminated
     thread.Join()
 
 
 #----  MAIN  ----#
 #if __name__ == '__main__':
 
+#calling main method to invoke the GUI
 main()
