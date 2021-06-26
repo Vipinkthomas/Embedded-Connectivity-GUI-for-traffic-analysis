@@ -835,9 +835,10 @@ class PacketAnalyser(Winforms.Form):
         stream.Close()
 
     def clearButtonOnClick(self, sender, args):
+
         """This function is triggered when clear button is clicked.
             It clears all the data (received and sent packets) in the textbox"""
-
+        #clear the richTextBox
         self.richTextBox.Clear()
 
     def formHelpButtonClicked(self, sender, CancelEventArgs):
@@ -890,6 +891,7 @@ class PacketAnalyser(Winforms.Form):
 
 def appThread():
     """This function create object of the GUI and run it as Windows Forms application"""
+
     #creates object of PacketAnalyser 
     app = PacketAnalyser()
     #running the object of PacketAnalyser as a Windows forms application
@@ -900,6 +902,7 @@ def appThread():
 
 def main():
 """main function creates thread for the Windows Forms application(GUI)"""
+
     #thread to be scheduled for execution.
     thread = Thread(ThreadStart(appThread))
     #sets the apartment state of a thread to single threaded apartment
