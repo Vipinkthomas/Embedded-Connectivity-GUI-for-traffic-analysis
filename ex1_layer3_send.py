@@ -14,10 +14,12 @@ udpMessage.udp_header.port_destination = 10000
 for i in range(20):
     
     if i < 10:
+        #Increasing the first byte of the payload data
         dataset = "0{0} 02 03 04 09".format(i)
     else:
         dataset = "{0} 02 03 04 09".format(i)
-              
+
+    #Adding data to payload before sending the message
     udpMessage.payload = System.Array[Byte](bytearray.fromhex(dataset))
     udpMessage.send()
     
