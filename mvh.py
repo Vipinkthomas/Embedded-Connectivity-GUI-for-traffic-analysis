@@ -397,9 +397,9 @@ class PacketAnalyser(Winforms.Form):
         # setting Combobox font
         self.frameTypeSelectBox.Font = draw.Font("Lato", System.Single(8))
         # adding 1st item at index 0 of the drop down list
-        self.frameTypeSelectBox.Items.Insert(0, "IP Packets")
+        self.frameTypeSelectBox.Items.Insert(0, "Layer3 Packets")
         # adding 2nd item at index 1 of the drop down list
-        self.frameTypeSelectBox.Items.Insert(1, "MAC")
+        self.frameTypeSelectBox.Items.Insert(1, "Layer2 Frames")
         # setting the default value to IP Packets
         self.frameTypeSelectBox.SelectedIndex = 0
         # Adding on select event ( selectedFrameType function is triggered )
