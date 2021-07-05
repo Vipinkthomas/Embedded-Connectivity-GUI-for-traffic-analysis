@@ -357,7 +357,7 @@ class PacketAnalyser(Winforms.Form):
         # creating button object
         self.clearButton = Winforms.Button()
         # setting location of button    
-        self.clearButton.Location = draw.Point(250, 600)
+        self.clearButton.Location = draw.Point(20, 600)
         # setting button size
         self.clearButton.Size = draw.Size(120, 40)
         # adding flat style to 
