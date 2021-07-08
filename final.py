@@ -883,13 +883,6 @@ class PacketAnalyser(Winforms.Form):
         self.saveButton.Enabled = True
 
 
-    ##KILL EVERYTHING WHEN CLOSED
-    ##COMMENT THE CODE.....
-    ##REMOVE REDUNDANT CODE
-    
-    ##ADD self.exiting
-
-
 def appThread():
     """This function create object of the GUI and run it as Windows Forms application"""
 
@@ -913,9 +906,6 @@ def main():
     #join the thread, to ensure that a thread has been terminated
     thread.Join()
 
-
-#----  MAIN  ----#
-#if __name__ == '__main__':
 
 #calling main method to invoke the GUI
 main()
